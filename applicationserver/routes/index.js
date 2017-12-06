@@ -1,7 +1,19 @@
 var express = require('express');
 var router = express.Router();
 var multer = require("multer");
-var upload = multer({dest: "./public/images"});
+//var upload = multer({dest: "./public/images"});
+
+var storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './public/images')
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.fieldname + '-' + Date.now() + ".jpg")
+  }
+})
+
+var upload = multer({ storage: storage })
+
 var db = require("mysql_orm");
 var settings = {
     host : "0.0.0.0",
@@ -36,7 +48,7 @@ router.post("/sendimage", upload.any(), function(request, response){
 	var idus = request.body.idus;
 	console.log(request);
 	console.log("ID US  -> " + idus);
-	var url = request.files[0].path.replace(/public/g,"http://localhost:3000");
+	var url = request.files[0].path.replace(/public/g,"http://192.168.43.124:3000");
 	var obj = {
 		url: url, 
 		name: request.files[0].filename,
@@ -74,6 +86,10 @@ router.get("/getCoors", function(req, res) {
 	})
 });
 
-
+router.get("/getimages", function(req, res) {
+	query.get("images").execute(function(result) {
+		res.send(result.result);
+	});
+});
 
 module.exports = router;
